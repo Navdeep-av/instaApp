@@ -7,7 +7,7 @@ import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <>
-    <GoogleOAuthProvider>
+    <GoogleOAuthProvider clientId="482708417538-qrt611obohjpa5sjmrnpsd8esons6fb7.apps.googleusercontent.com">
       <InstaUi />
     </GoogleOAuthProvider>
   </>

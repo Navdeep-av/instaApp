@@ -2,12 +2,12 @@ import express from "express";
 import { connectDB } from "./services/postDB/postDB.services.js";
 import { postsDataModel } from "./services/postDB/postDB.module.js";
 import cors from "cors";
+import { PORT } from "./app.config.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 connectDB();
-const port = 2100;
 
 function generateData(numEntries) {
   const data = [];
@@ -88,6 +88,6 @@ app.get("/getlikes", async (req, res) => {
   console.log("getLikes", getLikesList);
 });
 
-app.listen(port, () => {
-  console.log(`Server Running on ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server Running on ${PORT}`);
 });
