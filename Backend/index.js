@@ -88,6 +88,25 @@ app.get("/getlikes", async (req, res) => {
   console.log("getLikes", getLikesList);
 });
 
+app.post("/commentInfo", async (req, res) => {
+  const { postID, text, userEmail } = req.body;
+  console.log("postID", postID);
+  const updateComment = await postsDataModel.updateOne(
+    { id: postID },
+    {
+      $push: {
+        commentInfo: {
+          emailID: userEmail,
+          comment: text,
+        },
+      },
+    }
+  );
+
+  console.log(updateComment);
+  res.json(updateComment);
+});
+
 app.listen(PORT, () => {
   console.log(`Server Running on ${PORT}`);
 });

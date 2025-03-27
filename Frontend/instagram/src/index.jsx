@@ -5,19 +5,30 @@ import { useCallback } from "react";
 import PostCards from "./postCards";
 import CheckAuth from "./outh";
 import { googleLogout } from "@react-oauth/google";
+import Cookies from "js-cookie";
 
 const InstaUi = () => {
   const [items, setItems] = useState([]);
   const [index, setIndex] = useState(2);
   const loadRef = useRef(null);
   const [isAuth, setIsAuth] = useState(false);
-  const [credentials, setCredentials] = useState();
+  const [credentials, setCredentials] = useState(null);
   const [likedPosts, setLikedPosts] = useState([]);
 
   const handleLogin = async (googleCred) => {
     setCredentials(googleCred.email);
     const userEmail = googleCred.email;
     console.log("useremial", userEmail);
+
+    var inTwonMinutes = new Date(new Date().getTime() + 1 * 60 * 1000);
+
+    if (userEmail) {
+      Cookies.set("userEmailId", userEmail, { expires: inTwonMinutes });
+      setIsAuth(true);
+
+      // Cookies.set("userEmailId", userEmail, { expires: 1 / 1440 });
+    }
+
     try {
       const response = await axios.get("http://localhost:2100/getlikes", {
         params: {
@@ -77,10 +88,37 @@ const InstaUi = () => {
     };
 
     fetchInitialData();
+
+    const getUserLikeDetails = async () => {
+      const userEmail = Cookies.get("userEmailId");
+      console.log("userEmail", userEmail);
+      if (userEmail) {
+        try {
+          const response = await axios.get("http://localhost:2100/getlikes", {
+            params: {
+              userEmail,
+            },
+          });
+          const likedPostsId = response.data.map((item) => item.id);
+
+          setLikedPosts(likedPostsId);
+          setIsAuth(true);
+          setCredentials(userEmail);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    };
+
+    getUserLikeDetails();
   }, []);
 
-  const logout = () => {
+  const handleLogout = () => {
     googleLogout();
+    setIsAuth(false);
+    setCredentials(null);
+    setLikedPosts([]);
+    Cookies.remove("userEmailId");
   };
 
   console.log("Items", isAuth);
@@ -100,18 +138,16 @@ const InstaUi = () => {
           {" "}
           <img src={"/assets/insta-story.jpg"} alt="" />
         </div>
-        <div className="w-1/3 text-right">
+        <div className="w-1/3 text-right flex justify-end">
           <>
             {isAuth ? (
               <>
-                <button onClick={logout}>LogoutV2</button>
+                <button onClick={handleLogout}>Logout</button>
               </>
             ) : (
-              <a className="cursor-pointer" onClick={() => setIsAuth(true)}>
-                Login
-              </a>
+              ""
             )}
-            {isAuth && <CheckAuth onLoginSuccess={handleLogin} />}
+            {!isAuth && <CheckAuth onLoginSuccess={handleLogin} />}
           </>
         </div>
       </div>

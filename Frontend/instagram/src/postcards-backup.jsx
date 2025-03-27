@@ -98,8 +98,10 @@ const PostCards = ({ data, likedPosts, credentials }) => {
             alt=""
           />
         </div>
+        <div>
+          <span>...</span>
+        </div>
       </div>
-
       <div
         style={{
           backgroundColor: "#e7e7e7",
@@ -112,37 +114,28 @@ const PostCards = ({ data, likedPosts, credentials }) => {
           className="w-[400px] h-[595]"
           alt=""
         />
-        <div className="flex items-center">
-          <div className="mt-2">
-            {" "}
-            {isLike ? (
-              <button
-                className="material-symbols-outlined cursor-pointer"
-                onClick={() => onLikeButtonClick(data.id, true)}
-              >
-                <img src={`/assets/black-like.png`} alt="" className="w-6" />
-              </button>
-            ) : (
-              <button
-                className="cursor-pointer"
-                onClick={() => onLikeButtonClick(data.id, false)}
-              >
-                <img src={`/assets/filled-like.png`} alt="" className="w-6" />
-              </button>
-            )}
-          </div>
-          <div className="mt-2 ml-3">
+        <h3>id: {data.id}</h3>
+        <h3>Name: {data.name}</h3>
+        <h4>Image: {data.imageLink}</h4>
+
+        <h4>
+          {isLike ? (
             <button
               className="material-symbols-outlined cursor-pointer"
               onClick={() => onLikeButtonClick(data.id, true)}
             >
-              <img src={`/assets/chat.png`} alt="" className="w-5" />
+              <img src={`/assets/black-like.png`} alt="" className="w-5" />
             </button>
-          </div>
-        </div>
-
-        <span>{likesCount}</span>
-
+          ) : (
+            <button
+              className="cursor-pointer"
+              onClick={() => onLikeButtonClick(data.id, false)}
+            >
+              <img src={`/assets/filled-like.png`} alt="" className="w-5" />
+            </button>
+          )}
+          <span>{likesCount}</span>
+        </h4>
         <h4>Comment: {data.commentsCount}</h4>
         <ToastContainer />
       </div>

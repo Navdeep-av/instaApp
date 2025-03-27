@@ -1,0 +1,44 @@
+1) There would be option to add comment
+2) First User should login for add a comment otherwise will show warning for login
+3) If login we should have email ID in state
+4) Once comment added and click on Post then will send to backend via API
+5) Will send email and comment text and post ID where commented
+
+6) Comment box should open as a popup or lighbox
+
+
+----
+1) Receive postid, comment text, email ID
+2) 
+
+
+{
+id:1
+commentCount : 46
+commentInfo: {
+	emailid:"Text",
+	likesCount:2,
+	likesInfo:[emails]
+}
+}
+
+-----
+Cookies
+
+We will set cookies with email IDs
+
+1) wheneve first login with Google on successfully login, we will save email ID in cookies with 2hrs expiry.
+
+2) so whenever first page load, we will check if any email ID is persist in cookies or not?
+If yes, then we will pick that email ID and will send request to server and will get back data.
+
+
+
+Tell me all things in real
+
+What you feel about me?
+What do you think about my efforts?
+Where I currently stand?
+Where I am lacking?
+
+What about my communication skills?

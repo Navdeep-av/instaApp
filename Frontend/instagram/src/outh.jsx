@@ -5,6 +5,8 @@ const CheckAuth = ({ onLoginSuccess }) => {
   console.log("Login", onLoginSuccess);
   return (
     <GoogleLogin
+      useOneTap={false}
+      text="signin"
       onSuccess={(credentialResponse) => {
         console.log("Correct Login", credentialResponse);
         console.log("JWTDECODE", jwtDecode(credentialResponse.credential));

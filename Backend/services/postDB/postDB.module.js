@@ -11,6 +11,12 @@ const postSchema = Schema(
     likesCount: { type: Number },
     likesUserList: [{ type: String }],
     commentsCount: { type: String },
+    commentInfo: [
+      {
+        emailID: String,
+        comment: String,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -19,4 +25,4 @@ const postSchema = Schema(
 );
 console.log("Here 2");
 // Define a Model
-export const postsDataModel = model("PostsData", postSchema);
+export const postsDataModel = model("InstaPostsData", postSchema);
