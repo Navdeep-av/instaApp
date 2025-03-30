@@ -23,6 +23,8 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const [imageNum, setImageNum] = useState(0);
   const [likesCount, setLikesCount] = useState(data.likesCount);
   const [isLike, setIsLike] = useState(true);
+  const [commentValue, setCommentValue] = useState("");
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     if (imageNum === 10) {
@@ -43,7 +45,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const onLikeButtonClick = async (id, isLiked) => {
     if (!credentials) {
       toast.error("Please Login First", {
-        position: "bottom-center",
+        position: "top-right",
         autoClose: 1500,
         hideProgressBar: false,
         closeOnClick: false,
@@ -76,6 +78,31 @@ const PostCards = ({ data, likedPosts, credentials }) => {
     }
   };
 
+  const handleComment = (e, id) => {
+    setCommentValue(e.target.value);
+    console.log(id);
+  };
+
+  const handleCommentKey = async (e, id) => {
+    if (commentValue.length > 0 && e.key === "Enter") {
+      console.log("ID Comment", id);
+      try {
+        const response = await axios.post("http://localhost:2100/commentInfo", {
+          postID: id,
+          text: commentValue,
+          userEmail: credentials,
+        });
+        setComments(response.data.commentInfo);
+      } catch (err) {
+        console.log(err);
+      }
+
+      setCommentValue("");
+    }
+  };
+
+  console.log("Commenrs", comments);
+
   return (
     <>
       <div className="flex items-center">
@@ -102,8 +129,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
 
       <div
         style={{
-          backgroundColor: "#e7e7e7",
-          padding: "20px",
+          padding: "8px",
           marginBottom: "20px",
         }}
       >
@@ -132,18 +158,49 @@ const PostCards = ({ data, likedPosts, credentials }) => {
             )}
           </div>
           <div className="mt-2 ml-3">
-            <button
-              className="material-symbols-outlined cursor-pointer"
-              onClick={() => onLikeButtonClick(data.id, true)}
-            >
+            <button className="material-symbols-outlined cursor-pointer">
               <img src={`/assets/chat.png`} alt="" className="w-5" />
             </button>
           </div>
         </div>
 
-        <span>{likesCount}</span>
+        <span className="text-sm font-medium">{likesCount} likes</span>
+        <p className="leading-[19px] text-sm mt-1">
+          <span className="font-medium"> {data.name} </span>
 
-        <h4>Comment: {data.commentsCount}</h4>
+          <span className="text-sm font-[Segoe UI]">
+            {data.postCaption} <span className="text-[#737373]">more</span>
+          </span>
+        </p>
+        <p className="text-[12px] text-[#737373] mt-[6px]">
+          View all {data.commentsCount} comments
+        </p>
+        {comments &&
+          comments
+            .reverse()
+            .slice(0, 3)
+            .map((item) => (
+              <div>
+                <span className="text-[12px] font-medium mt-[5px]">
+                  {data.name}{" "}
+                </span>{" "}
+                <span className="text-[12px]">{item.comment}</span>
+              </div>
+            ))}
+
+        <p>
+          {credentials && (
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              onChange={(e) => handleComment(e, data.id)}
+              onKeyUp={(e) => handleCommentKey(e, data.id)}
+              value={commentValue}
+              className="placeholder:text-[#737373] placeholder:text-xs w-[100%] pb-[7px] border-b-[1px] border-[#dbdbdb] mt-2"
+            />
+          )}
+        </p>
+
         <ToastContainer />
       </div>
     </>

@@ -7,6 +7,7 @@ const postSchema = Schema(
     id: { type: String, required: true },
     name: { type: String, required: true },
     postLink: { type: String, required: true },
+    postCaption: { type: String, required: true },
     imageLink: { type: String },
     likesCount: { type: Number },
     likesUserList: [{ type: String }],
@@ -25,4 +26,4 @@ const postSchema = Schema(
 );
 console.log("Here 2");
 // Define a Model
-export const postsDataModel = model("InstaPostsData", postSchema);
+export const postsDataModel = model("InstaFeedsData", postSchema);

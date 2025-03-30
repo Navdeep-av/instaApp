@@ -14,9 +14,11 @@ function generateData(numEntries) {
   for (let i = 0; i < numEntries; i++) {
     data.push({
       id: i + 1,
-      name: `Items ${i + 1}`,
+      name: `Items_${i + 1}`,
       postLink: `PostLink ${i + 1}`,
       imageLink: `ImageLink ${i + 1}`,
+      postCaption:
+        "A viral screenshot from the Turkish series Dirilis: Ertugrul featuring actor Cavit Cetin Guner has caught attention,...",
       likesCount: Math.floor(Math.random() * 100),
       likesUserList: [],
       commentsCount: Math.floor(Math.random() * 100),
@@ -103,8 +105,17 @@ app.post("/commentInfo", async (req, res) => {
     }
   );
 
-  console.log(updateComment);
-  res.json(updateComment);
+  const findComm = await postsDataModel.findOne({ id: postID });
+  console.log("FindComm", findComm);
+
+  res.json(findComm);
+});
+
+app.get("/comminfo", async (req, res) => {
+  const findComm = await postsDataModel.findOne({ id: 2 });
+  console.log("FindComm", findComm);
+
+  res.json(findComm);
 });
 
 app.listen(PORT, () => {

@@ -14,3 +14,14 @@ Where I am lacking?
 
 What about my communication skills?
 
+const response = await axios.post("http://localhost:2100/commentInfo", {
+          id,
+          text: commentValue,
+          userEmail: credentials,
+        });
+
+        const response = await axios.post("http://localhost:2100/commentInfo", {
+          id,
+          text,
+          userEmail,
+        });
