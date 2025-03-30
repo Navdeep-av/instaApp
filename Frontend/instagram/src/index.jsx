@@ -20,7 +20,7 @@ const InstaUi = () => {
     const userEmail = googleCred.email;
     console.log("useremial", userEmail);
 
-    var inTwonMinutes = new Date(new Date().getTime() + 1 * 60 * 1000);
+    var inTwonMinutes = new Date(new Date().getTime() + 5 * 60 * 1000);
 
     if (userEmail) {
       Cookies.set("userEmailId", userEmail, { expires: inTwonMinutes });
@@ -153,7 +153,7 @@ const InstaUi = () => {
       </div>
       <div className="block"></div>
       <div className="flex justify-center">
-        <div className="w-96">
+        <div className="w-[26rem]">
           {items.length > 0 ? (
             items.map((item) => {
               return (
