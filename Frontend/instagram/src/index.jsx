@@ -20,7 +20,7 @@ const InstaUi = () => {
     const userEmail = googleCred.email;
     console.log("useremial", userEmail);
 
-    var inTwonMinutes = new Date(new Date().getTime() + 10 * 60 * 1000);
+    var inTwonMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
 
     if (userEmail) {
       Cookies.set("userEmailId", userEmail, { expires: inTwonMinutes });

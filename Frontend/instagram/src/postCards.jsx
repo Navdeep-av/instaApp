@@ -47,6 +47,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const [activeCommentId, setActiveCommentId] = useState(null);
   const [commentReplyInputValue, setCommentReplyInputValue] = useState("");
   const [commentsLikeList, setcommentsLikeList] = useState([]);
+  const [showNestedComment, setShowNestedComment] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -202,6 +203,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
           }
         );
         console.log("Handle NestedComment", response.data);
+        setShowNestedComment(true);
       } catch (err) {
         console.log(err);
       }
@@ -268,8 +270,41 @@ const PostCards = ({ data, likedPosts, credentials }) => {
                       >
                         Reply
                       </button>
+                      {!showNestedComment ? (
+                        item.nestedComment.length > 0 && (
+                          <button
+                            className="text-[11px]"
+                            onClick={() =>
+                              setShowNestedComment(!showNestedComment)
+                            }
+                          >
+                            View Replies
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          className="text-[11px]"
+                          onClick={() =>
+                            setShowNestedComment(!showNestedComment)
+                          }
+                        >
+                          Hide Replies
+                        </button>
+                      )}
                     </div>
-                    <div>
+                    <div className="ml-8">
+                      {showNestedComment &&
+                        item.nestedComment.map((item) => (
+                          <div>
+                            <span className="text-[12px] font-medium mt-[5px]">
+                              {item.nestedEmailID}{" "}
+                            </span>{" "}
+                            <span className="text-[12px]">
+                              {item.nestedComment}
+                            </span>
+                          </div>
+                        ))}
+
                       {activeCommentId === item._id && (
                         <input
                           type="text"
