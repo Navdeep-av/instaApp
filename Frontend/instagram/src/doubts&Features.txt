@@ -25,3 +25,11 @@ const response = await axios.post("http://localhost:2100/commentInfo", {
           text,
           userEmail,
         });
+
+Created state for every thing
+
+1) Likes by 2 user and can see without refresh
+2) Emoji option
+3) Report option
+4) Text Limit
+5) Hide nested Comments option

@@ -16,6 +16,14 @@ const postSchema = Schema(
       {
         emailID: String,
         comment: String,
+        commentLikesUserList: [{ type: String }],
+        nestedComment: [
+          {
+            nestedEmailID: String,
+            nestedComment: String,
+            nestedCommentLikes: { type: Number },
+          },
+        ],
       },
     ],
   },
@@ -26,4 +34,4 @@ const postSchema = Schema(
 );
 console.log("Here 2");
 // Define a Model
-export const postsDataModel = model("InstaFeedsData", postSchema);
+export const postsDataModel = model("instapostsdatas", postSchema);

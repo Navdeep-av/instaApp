@@ -42,3 +42,36 @@ Where I currently stand?
 Where I am lacking?
 
 What about my communication skills?
+
+
+
+
+
+
+
+
+--------
+
+Frontend se send karna - Post ID, CommentID, UserID, true and false
+
+Backend se kya aayega - 
+Useremail : Comment : Likes Count
+
+Login hone par
+
+Take userID from credential state, 
+For this we will map commentInfo
+First Item aaya usme commentLikesUserList me check kara ki credential wali email ID h ya nahi? agar h toh like enable karwa do...
+
+
+
+
+mongoose updateOne
+
+- add a new record in comments subdocument if liked:true for user:1, postId:201
+- remove the record from comments subdocument if liked:false user :1, postId:201
+
+i need a express router & code
+
+https://codeshare.io/ezyJLK
+

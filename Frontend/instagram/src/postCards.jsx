@@ -4,15 +4,12 @@ import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 
 import * as React from "react";
-import Button from "@mui/material/Button";
+
 import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
+
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import Typography from "@mui/material/Typography";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -46,6 +43,10 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const [comments, setComments] = useState(data.commentInfo);
   const [open, setOpen] = React.useState(false);
   const [commentCount, setCommentCount] = useState();
+  const [isCommentLike, setIsCommentLike] = useState(false);
+  const [activeCommentId, setActiveCommentId] = useState(null);
+  const [commentReplyInputValue, setCommentReplyInputValue] = useState("");
+  const [commentsLikeList, setcommentsLikeList] = useState([]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -53,6 +54,15 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    const likeCredList = comments
+      .filter((item) => item.commentLikesUserList.includes(credentials))
+      .map((item) => item._id);
+
+    console.log("Like Cred", likeCredList);
+    setcommentsLikeList(likeCredList);
+  }, [credentials]);
 
   useEffect(() => {
     if (imageNum === 10) {
@@ -107,6 +117,32 @@ const PostCards = ({ data, likedPosts, credentials }) => {
     }
   };
 
+  const onCommentLikeButtonClick = async (id) => {
+    const newIsCommentLike = !commentsLikeList.includes(id);
+    if (!commentsLikeList.includes(id)) {
+      setcommentsLikeList((prev) => [...prev, id]);
+    } else {
+      setcommentsLikeList((prev) => prev.filter((item) => item !== id));
+    }
+    setIsCommentLike(newIsCommentLike);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:2100/commentlikeupdate",
+        {
+          postId: data.id,
+          commentId: id,
+          userEmail: credentials,
+          isCommentLike: newIsCommentLike,
+        }
+      );
+
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const handleComment = (e, id) => {
     setCommentValue(e.target.value);
     console.log(id);
@@ -121,7 +157,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
           text: commentValue,
           userEmail: credentials,
         });
-        setComments(response.data.commentInfo);
+        setComments(response.data.commentInfo.reverse());
         setCommentCount(response.data.commentInfo.length);
       } catch (err) {
         console.log(err);
@@ -131,7 +167,50 @@ const PostCards = ({ data, likedPosts, credentials }) => {
     }
   };
 
-  console.log("Commenrs", comments);
+  const onNestedCommentToggle = (commentId) => {
+    if (!credentials) {
+      toast.error("Please Login First", {
+        position: "top-right",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return;
+    }
+    setActiveCommentId((prev) => (prev === commentId ? null : commentId));
+  };
+
+  const onHandleReplyCommentchange = (e) => {
+    setCommentReplyInputValue(e.target.value);
+  };
+
+  const onHandleReplyComment = async (e, id) => {
+    if (commentReplyInputValue.length > 0 && e.key === "Enter") {
+      console.log("ID Comment", id);
+      try {
+        const response = await axios.post(
+          "http://localhost:2100/nestedCommentInfo",
+          {
+            postID: id,
+            text: commentReplyInputValue,
+            userEmail: credentials,
+            commentID: activeCommentId,
+          }
+        );
+        console.log("Handle NestedComment", response.data);
+      } catch (err) {
+        console.log(err);
+      }
+
+      setCommentReplyInputValue("");
+    }
+  };
+
+  console.log("Comments", comments);
 
   console.log("Length", data.commentInfo);
 
@@ -181,10 +260,33 @@ const PostCards = ({ data, likedPosts, credentials }) => {
                       {item.emailID}{" "}
                     </span>{" "}
                     <span className="text-[12px]">{item.comment}</span>
+                    <div className="flex gap-2">
+                      <p className="text-[11px]">54 likes</p>{" "}
+                      <button
+                        className="text-[11px]"
+                        onClick={() => onNestedCommentToggle(item._id)}
+                      >
+                        Reply
+                      </button>
+                    </div>
+                    <div>
+                      {activeCommentId === item._id && (
+                        <input
+                          type="text"
+                          value={commentReplyInputValue}
+                          onChange={(e) => onHandleReplyCommentchange(e)}
+                          onKeyUp={(e) => onHandleReplyComment(e, data.id)}
+                          placeholder="Add a comment..."
+                          className="text-xs placeholder:text-[#737373] placeholder:text-xs w-[100%] pb-[7px] 
+                          border-b-[1px] border-[#dbdbdb] mt-2 focus:border-b-2 focus:border-[#000] outline-none"
+                        />
+                      )}
+                    </div>
                   </div>
                 ))}
             </p>
-            <div className="flex items-center">
+
+            <div className="flex items-center gap-1">
               <div className="mt-2">
                 {" "}
                 {isLike ? (
@@ -320,17 +422,37 @@ const PostCards = ({ data, likedPosts, credentials }) => {
         </p>
         {comments &&
           credentials &&
-          comments
-            .reverse()
-            .slice(0, 3)
-            .map((item) => (
-              <div>
-                <span className="text-[12px] font-medium mt-[5px]">
+          comments.slice(0, 3).map((item) => (
+            <div className="flex">
+              <div className="w-full flex">
+                <span className="text-[12px] font-medium ">
                   {item.emailID}{" "}
                 </span>{" "}
-                <span className="text-[12px]">{item.comment}</span>
+                <span className="text-[12px] ml-1">{item.comment}</span>
               </div>
-            ))}
+              <div className="flex flex-col">
+                <button
+                  className="material-symbols-outlined cursor-pointer"
+                  onClick={() => onCommentLikeButtonClick(item._id)}
+                >
+                  <img
+                    src={
+                      commentsLikeList.includes(item._id)
+                        ? "/assets/filled-like.png"
+                        : "/assets/black-like.png"
+                    }
+                    alt="Like"
+                    className="w-[14px]"
+                  />
+                </button>
+
+                <span className="text-center text-[12px]">
+                  {" "}
+                  {item.commentLikes}
+                </span>
+              </div>
+            </div>
+          ))}
 
         <p>
           {credentials && (

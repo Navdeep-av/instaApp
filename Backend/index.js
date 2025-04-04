@@ -31,7 +31,6 @@ app.get("/posts", async (req, res) => {
   const { offset, limit } = req.query;
   // console.log("Offset", offset, typeof offset);
   // console.log("limit", limit, typeof limit);
-  console.log("inside API Hit");
 
   const savedPosts = await postsDataModel.find().skip(offset).limit(limit);
 
@@ -39,7 +38,7 @@ app.get("/posts", async (req, res) => {
 });
 
 app.get("/generatedata", async (req, res) => {
-  let generatedData = generateData(20000);
+  let generatedData = generateData(20);
 
   const savedPosts = await postsDataModel.insertMany(generatedData);
   console.log("Post", savedPosts);
@@ -111,12 +110,65 @@ app.post("/commentInfo", async (req, res) => {
   res.json(findComm);
 });
 
-app.get("/comminfo", async (req, res) => {
-  const findComm = await postsDataModel.findOne({ id: 2 });
-  console.log("FindComm", findComm);
-
-  res.json(findComm);
+app.post("/nestedCommentInfo", async (req, res) => {
+  const { postID, text, userEmail, commentID } = req.body;
+  console.log("postID", postID);
+  try {
+    const updateComment = await postsDataModel.findOneAndUpdate(
+      {
+        id: postID,
+        "commentInfo._id": commentID,
+      },
+      {
+        $push: {
+          "commentInfo.$.nestedComment": {
+            nestedEmailID: userEmail,
+            nestedComment: text,
+            nestedCommentLikes: 0,
+          },
+        },
+      },
+      { new: true }
+    );
+    console.log("Nested Comm", updateComment);
+    return res.status(200).json(updateComment);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json(updateComment);
+  }
 });
+
+app.post("/commentlikeupdate", async (req, res) => {
+  const { postId, commentId, userEmail, isCommentLike } = req.body;
+
+  try {
+    const updateLikes = await postsDataModel.updateOne(
+      { id: postId, "commentInfo._id": commentId },
+      isCommentLike
+        ? {
+            $inc: { "commentInfo.$.likesCount": 1 },
+            $push: { "commentInfo.$.commentLikesUserList": userEmail },
+          }
+        : {
+            $inc: { "commentInfo.$.likesCount": -1 },
+            $pull: { "commentInfo.$.commentLikesUserList": userEmail },
+          }
+    );
+
+    console.log(updateLikes);
+    res.status(200).json(updateLikes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// app.get("/comminfo", async (req, res) => {
+//   const findComm = await postsDataModel.findOne({ id: 2 });
+//   console.log("FindComm", findComm);
+
+//   res.json(findComm);
+// });
 
 app.listen(PORT, () => {
   console.log(`Server Running on ${PORT}`);
