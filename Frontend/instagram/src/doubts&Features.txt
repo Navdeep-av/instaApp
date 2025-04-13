@@ -33,3 +33,7 @@ Created state for every thing
 3) Report option
 4) Text Limit
 5) Hide nested Comments option
+6) Nested Comments Like feature
+7) Delete Comments feature
+8) Create Post feature
+9) Need to load images correcly

@@ -27,6 +27,7 @@ function generateData(numEntries) {
   return data;
 }
 
+// for Infine Scrolling
 app.get("/posts", async (req, res) => {
   const { offset, limit } = req.query;
   // console.log("Offset", offset, typeof offset);
@@ -89,6 +90,7 @@ app.get("/getlikes", async (req, res) => {
   console.log("getLikes", getLikesList);
 });
 
+// Add/Update Post Comment
 app.post("/commentInfo", async (req, res) => {
   const { postID, text, userEmail } = req.body;
   console.log("postID", postID);
@@ -97,8 +99,13 @@ app.post("/commentInfo", async (req, res) => {
     {
       $push: {
         commentInfo: {
-          emailID: userEmail,
-          comment: text,
+          $each: [
+            {
+              emailID: userEmail,
+              comment: text,
+            },
+          ],
+          $position: 0,
         },
       },
     }
@@ -140,19 +147,20 @@ app.post("/nestedCommentInfo", async (req, res) => {
 
 app.post("/commentlikeupdate", async (req, res) => {
   const { postId, commentId, userEmail, isCommentLike } = req.body;
-
+  console.log("IsCommentLIKE", isCommentLike);
   try {
-    const updateLikes = await postsDataModel.updateOne(
+    const updateLikes = await postsDataModel.findOneAndUpdate(
       { id: postId, "commentInfo._id": commentId },
       isCommentLike
         ? {
-            $inc: { "commentInfo.$.likesCount": 1 },
+            $inc: { "commentInfo.$.commentLikesCount": 1 },
             $push: { "commentInfo.$.commentLikesUserList": userEmail },
           }
         : {
-            $inc: { "commentInfo.$.likesCount": -1 },
+            $inc: { "commentInfo.$.commentLikesCount": -1 },
             $pull: { "commentInfo.$.commentLikesUserList": userEmail },
-          }
+          },
+      { new: true }
     );
 
     console.log(updateLikes);

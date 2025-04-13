@@ -35,6 +35,7 @@ const images = [
 ];
 
 const PostCards = ({ data, likedPosts, credentials }) => {
+  console.log("Navde1");
   console.log("Data", data);
   const [imageNum, setImageNum] = useState(0);
   const [likesCount, setLikesCount] = useState(data.likesCount);
@@ -55,7 +56,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   const handleClose = () => {
     setOpen(false);
   };
-
+  console.log("Navde2");
   useEffect(() => {
     const likeCredList = comments
       .filter((item) => item.commentLikesUserList.includes(credentials))
@@ -112,13 +113,27 @@ const PostCards = ({ data, likedPosts, credentials }) => {
         isLiked,
         credentials,
       });
-      console.log(response.data);
+      console.log("navd3", response.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   const onCommentLikeButtonClick = async (id) => {
+    if (!credentials) {
+      toast.error("Please Login First", {
+        position: "top-right",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return;
+    }
+
     const newIsCommentLike = !commentsLikeList.includes(id);
     if (!commentsLikeList.includes(id)) {
       setcommentsLikeList((prev) => [...prev, id]);
@@ -138,7 +153,8 @@ const PostCards = ({ data, likedPosts, credentials }) => {
         }
       );
 
-      console.log(response);
+      console.log("Response: Commnent Like", response);
+      setComments(response.data.commentInfo);
     } catch (err) {
       console.log(err);
     }
@@ -158,7 +174,7 @@ const PostCards = ({ data, likedPosts, credentials }) => {
           text: commentValue,
           userEmail: credentials,
         });
-        setComments(response.data.commentInfo.reverse());
+        setComments(response.data.commentInfo);
         setCommentCount(response.data.commentInfo.length);
       } catch (err) {
         console.log(err);
@@ -186,6 +202,19 @@ const PostCards = ({ data, likedPosts, credentials }) => {
   };
 
   const onHandleReplyCommentchange = (e) => {
+    if (!credentials) {
+      toast.error("Please Login First", {
+        position: "top-right",
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+      });
+      return;
+    }
     setCommentReplyInputValue(e.target.value);
   };
 
@@ -203,6 +232,8 @@ const PostCards = ({ data, likedPosts, credentials }) => {
           }
         );
         console.log("Handle NestedComment", response.data);
+        setComments(response.data.commentInfo);
+
         setShowNestedComment(true);
       } catch (err) {
         console.log(err);
@@ -210,6 +241,11 @@ const PostCards = ({ data, likedPosts, credentials }) => {
 
       setCommentReplyInputValue("");
     }
+  };
+
+  const onHandleViewReply = (commentId) => {
+    setShowNestedComment(!showNestedComment);
+    setActiveCommentId((prev) => (prev === commentId ? null : commentId));
   };
 
   console.log("Comments", comments);
@@ -257,43 +293,71 @@ const PostCards = ({ data, likedPosts, credentials }) => {
             <p>
               {comments &&
                 comments.map((item) => (
-                  <div>
-                    <span className="text-[12px] font-medium mt-[5px]">
-                      {item.emailID}{" "}
-                    </span>{" "}
-                    <span className="text-[12px]">{item.comment}</span>
+                  <div className="mb-2">
+                    <div className="flex">
+                      <div className="w-full flex">
+                        <span className="text-[12px] font-medium mt-[5px]">
+                          {item.emailID}{" "}
+                        </span>{" "}
+                        <span className="text-[12px] mt-[5px] ml-1">
+                          {item.comment}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <button
+                          className="material-symbols-outlined cursor-pointer"
+                          onClick={() => onCommentLikeButtonClick(item._id)}
+                        >
+                          <img
+                            src={
+                              commentsLikeList.includes(item._id)
+                                ? "/assets/filled-like.png"
+                                : "/assets/black-like.png"
+                            }
+                            alt="Like"
+                            className="w-[14px] mt-[5px]"
+                          />
+                        </button>
+                        {/* 
+                <span className="text-center text-[12px]">
+                  {" "}
+                  {item.commentLikes}
+                </span> */}
+                      </div>
+                    </div>
                     <div className="flex gap-2">
-                      <p className="text-[11px]">54 likes</p>{" "}
+                      <p className="text-[11px]">
+                        {item.commentLikesCount > 0 &&
+                          item.commentLikesCount + " Likes"}
+                      </p>{" "}
                       <button
                         className="text-[11px]"
                         onClick={() => onNestedCommentToggle(item._id)}
                       >
                         Reply
                       </button>
-                      {!showNestedComment ? (
-                        item.nestedComment.length > 0 && (
-                          <button
-                            className="text-[11px]"
-                            onClick={() =>
-                              setShowNestedComment(!showNestedComment)
-                            }
-                          >
-                            View Replies
-                          </button>
-                        )
-                      ) : (
-                        <button
-                          className="text-[11px]"
-                          onClick={() =>
-                            setShowNestedComment(!showNestedComment)
-                          }
-                        >
-                          Hide Replies
-                        </button>
-                      )}
+                      {!showNestedComment
+                        ? item.nestedComment.length > 0 && (
+                            <button
+                              className="text-[11px]"
+                              onClick={() => onHandleViewReply(item._id)}
+                            >
+                              View Replies
+                            </button>
+                          )
+                        : item.nestedComment.length > 0 &&
+                          activeCommentId == item._id && (
+                            <button
+                              className="text-[11px]"
+                              onClick={() => onHandleViewReply(item._id)}
+                            >
+                              Hide Replies
+                            </button>
+                          )}
                     </div>
                     <div className="ml-8">
                       {showNestedComment &&
+                        activeCommentId == item._id &&
                         item.nestedComment.map((item) => (
                           <div>
                             <span className="text-[12px] font-medium mt-[5px]">
@@ -480,11 +544,11 @@ const PostCards = ({ data, likedPosts, credentials }) => {
                     className="w-[14px]"
                   />
                 </button>
-
+                {/* 
                 <span className="text-center text-[12px]">
                   {" "}
                   {item.commentLikes}
-                </span>
+                </span> */}
               </div>
             </div>
           ))}

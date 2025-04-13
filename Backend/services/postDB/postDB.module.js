@@ -17,6 +17,7 @@ const postSchema = Schema(
         emailID: String,
         comment: String,
         commentLikesUserList: [{ type: String }],
+        commentLikesCount: { type: Number, default: 0 },
         nestedComment: [
           {
             nestedEmailID: String,
