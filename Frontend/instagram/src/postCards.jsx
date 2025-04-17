@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
-
+import Cookies from "js-cookie";
 import * as React from "react";
 
 import { styled } from "@mui/material/styles";
@@ -10,6 +10,8 @@ import Dialog from "@mui/material/Dialog";
 
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+
+import socket from "./socket";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -35,7 +37,6 @@ const images = [
 ];
 
 const PostCards = ({ data, likedPosts, credentials }) => {
-  console.log("Navde1");
   console.log("Data", data);
   const [imageNum, setImageNum] = useState(0);
   const [likesCount, setLikesCount] = useState(data.likesCount);
@@ -65,6 +66,32 @@ const PostCards = ({ data, likedPosts, credentials }) => {
     console.log("Like Cred", likeCredList);
     setcommentsLikeList(likeCredList);
   }, [credentials]);
+
+  useEffect(() => {
+    socket.on("postLiked", ({ postId, isLiked, credentials }) => {
+      console.log("Real-time like event:", postId, isLiked, credentials);
+
+      const userEmail = Cookies.get("userEmailId");
+      console.log("UserEmail", userEmail);
+
+      if (data.id === postId) {
+        if (isLiked) {
+          setLikesCount((prev) => prev + 1);
+        } else {
+          setLikesCount((prev) => prev - 1);
+        }
+        if (userEmail === credentials && isLiked) {
+          setIsLike(false);
+        } else if (userEmail === credentials && !isLiked) {
+          setIsLike(true);
+        }
+      }
+    });
+
+    return () => {
+      socket.off("postLiked");
+    };
+  }, []);
 
   useEffect(() => {
     if (imageNum === 10) {
@@ -100,10 +127,8 @@ const PostCards = ({ data, likedPosts, credentials }) => {
     console.log("id", id);
     console.log("IsLike", isLiked);
     if (isLiked) {
-      setLikesCount((prev) => prev + 1);
       setIsLike(false);
     } else {
-      setLikesCount((prev) => prev - 1);
       setIsLike(true);
     }
 
@@ -113,10 +138,15 @@ const PostCards = ({ data, likedPosts, credentials }) => {
         isLiked,
         credentials,
       });
-      console.log("navd3", response.data);
     } catch (err) {
       console.log(err);
     }
+
+    socket.emit("postLiked", {
+      id,
+      isLiked,
+      credentials,
+    });
   };
 
   const onCommentLikeButtonClick = async (id) => {

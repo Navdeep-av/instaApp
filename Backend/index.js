@@ -4,7 +4,26 @@ import { postsDataModel } from "./services/postDB/postDB.module.js";
 import cors from "cors";
 import { PORT } from "./app.config.js";
 
+import { Server } from "socket.io";
+import http from "http";
+
 const app = express();
+// const io = new Server(server);
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+let globalIO = io;
+io.on("connection", (socket) => {
+  console.log("a user connected");
+});
+
 app.use(cors());
 app.use(express.json());
 connectDB();
@@ -75,6 +94,9 @@ app.post("/likeupdate", async (req, res) => {
           $pull: { likesUserList: credentials },
         }
       );
+
+  globalIO.emit("postLiked", { postId: id, isLiked, credentials });
+
   console.log(updateLikes);
   res.json(updateLikes);
 });
@@ -178,6 +200,6 @@ app.post("/commentlikeupdate", async (req, res) => {
 //   res.json(findComm);
 // });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server Running on ${PORT}`);
 });
